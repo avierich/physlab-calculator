@@ -1,6 +1,10 @@
 import pandas as pd
 from sympy import *
+import uncertainties
 
+
+def alex_lazy_format(value, sigma_value):
+    return '{:L}'.format(uncertainties.ufloat(float(value), float(sigma_value)))
 
 def structure_line(equation_string):
     expression = sympify(equation_string)
@@ -39,6 +43,40 @@ def evaluate_equation(expression, csv, row):
 def gen_error_example(quantity, equation_string):
     return '\\begin{align} \\sigma_{' + latex(sympify(quantity)) + '}&=' +  structure_line(equation_string) + '\\\\\\sigma_{' + latex(sympify(quantity)) + '}&=' + latex(error_equation(equation_string)) + '\\end{align}'
 
+def table_header(expresion, quantity, csv) :
+    # Make the headers
+    row_text = latex(sympify(quantity))
+    for variable in expresion.free_symbols :
+        row_text = row_text + '&' + latex(variable) + ' (\\SI{}{' + csv.iloc[0][str(variable)] + '})'
+
+    return row_text + '\\\\'
+
+def table_row(expresion, value, sigma_value, csv, row):
+    # Make the headers
+    row_text = '$' + alex_lazy_format(value,sigma_value) + '$'
+    for variable in expresion.free_symbols:
+        row_text += '&$' + alex_lazy_format(csv.iloc[row][str(variable)], csv.iloc[row]['sigma_'+str(variable)]) + '$'
+
+    return row_text + '\\\\'
+
+def make_table(expression, error_expression, quantity, csv):
+    column_string = ''
+    for i in range(0, len(expression.free_symbols)+1):
+        column_string += 'l'
+
+    table_string = '\\begin{tabular}{' + column_string + '}' + table_header(expression, quantity, csv)
+
+    result = 3141
+    i = 1
+    while result != nan :
+        result = evaluate_equation(expression, csv, i)
+        sigma_result = evaluate_equation(error_expression, csv, i)
+        if (result != nan) :
+            table_string += table_row(expression, result.evalf(), sigma_result.evalf(),  csv, i)
+        i += 1
+
+    return table_string + '\\end{tabular}'
+
 
 if __name__ == '__main__':
     test = pd.read_csv('main_test.csv')
@@ -66,5 +104,6 @@ if __name__ == '__main__':
 
     print(formula_text)
     print(error_text)
+    print(make_table(sympify(formula), error_equation(formula), quantity, test))
 
 
