@@ -45,7 +45,7 @@ def gen_error_example(quantity, equation_string):
 
 def table_header(expresion, quantity, csv) :
     # Make the headers
-    row_text = latex(sympify(quantity))
+    row_text = latex(sympify(quantity)) + ' (\\SI{}{' + csv.iloc[0]['Equation'] + '})'
     for variable in expresion.free_symbols :
         row_text = row_text + '&' + latex(variable) + ' (\\SI{}{' + csv.iloc[0][str(variable)] + '})'
 
@@ -79,7 +79,7 @@ def make_table(expression, error_expression, quantity, csv):
 
 
 if __name__ == '__main__':
-    test = pd.read_csv('main_test.csv')
+    test = pd.read_csv('vacuum_volume.csv')
 
     # The equation string from the csv
     equation = test.iloc[1]['Equation']
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         '&=' + structure_line(formula) + '\\\\ '+\
         '&=' + latex(error_equation(formula)) + '\\\\ '+\
         '&=' + sub_values(error_equation(formula), test, 1) + '\\\\'+\
-        '&= \\SI{' + latex(evaluate_equation(error_equation(formula), test, 1).evalf()) + '}{' + test.iloc[0]['Equation'] + '}\\end{align}'
+        '&= \\SI{' + str(evaluate_equation(error_equation(formula), test, 1).evalf()) + '}{' + test.iloc[0]['Equation'] + '}\\end{align}'
 
     print(formula_text)
     print(error_text)
