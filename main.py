@@ -123,10 +123,13 @@ if __name__ == '__main__':
 
     table_text = make_table(sympify(formula), error_equation(formula), quantity, test)
 
-    # Replacements
-    formula_text = formula_text.replace('lamb', '\lambda')
-    error_text = error_text.replace('lamb', '\lambda')
-    table_text = table_text.replace('lamb', '\lambda')
+    # Replacements, theres going to need to be a lot more of these in the future
+    replacements = {'lamb':'\lambda', '\operatorname{asin}':'\\arcsin', '\operatorname{acos}':'\\arccos', '\operatorname{atan}':'\\arctan'}
+
+    for key in replacements.keys():
+        formula_text = formula_text.replace(key, replacements[key])
+        error_text = error_text.replace(key, replacements[key])
+        table_text = table_text.replace(key, replacements[key])
 
     print(formula_text)
     print(error_text)
